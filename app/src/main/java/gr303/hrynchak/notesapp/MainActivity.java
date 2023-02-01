@@ -36,14 +36,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (data != null) {
-            int pos = data.getIntExtra("my-note-index", -1);
             String title = data.getStringExtra("my-note-title");
             String content = data.getStringExtra("my-note-content");
 
-            Note n = adp.getItem(pos);
+            Note n = new Note();
             n.title = title;
             n.content = content;
 
+            adp.add(n);
             adp.notifyDataSetChanged();
         }
 
@@ -51,18 +51,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void on_new_click(View v) {
-        Note n = new Note();
-        n.title = "New note";
-        n.content = "Some content";
-
-        adp.add(n);
-        int pos = adp.getPosition(n);
-
         Intent i = new Intent(this, Main2Activity.class);
-        i.putExtra("my-note-index", pos);
-        i.putExtra("my-note-title", n.title);
-        i.putExtra("my-note-content", n.content);
-
         startActivityForResult(i, 12345);
     }
 
