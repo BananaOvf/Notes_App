@@ -1,9 +1,14 @@
 package gr303.hrynchak.notesapp;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -26,9 +31,12 @@ public class MainActivity extends AppCompatActivity {
         ListView lst = findViewById(R.id.lst_notes);
         lst.setAdapter(adp);
 
+
         lst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                lst.requestFocusFromTouch();
+                lst.setSelection(position);
                 current = position;
             }
         });
@@ -66,23 +74,48 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void on_edit_click(View v) {
+        if(current < 0 && adp.getCount() >= 1) Toast.makeText(getApplicationContext(),
+                "Select a note to edit", Toast.LENGTH_SHORT).show();
         if (current >= 0 && current < adp.getCount() ) {
             Intent i = new Intent(this, Main2Activity.class);
             i.putExtra("my-note-pos", current);
             i.putExtra("my-note-title", adp.getItem(current).title);
             i.putExtra("my-note-content", adp.getItem(current).content);
             startActivityForResult(i, 12345);
+            current = -1;
         }
+        if(adp.getCount() < 1) Toast.makeText(getApplicationContext(),
+                "Nothing to edit", Toast.LENGTH_SHORT).show();
     }
 
     public void on_delete_click(View v) {
+        if(current < 0 && adp.getCount() >= 1) Toast.makeText(getApplicationContext(),
+                "Select a note to delete", Toast.LENGTH_SHORT).show();
         if (adp.getCount() > 0) {
             if (current >= 0) {
-                adp.remove(adp.getItem(current));
-                adp.notifyDataSetChanged();
-                current--;
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                AlertDialog dialog = builder.create();
+                dialog.setTitle("Warning");
+                dialog.setMessage("Are you sure you want to delete this note?");
+
+                dialog.setButton(Dialog.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        adp.remove(adp.getItem(current));
+                        adp.notifyDataSetChanged();
+                        current--;
+                    }
+                });
+                dialog.setButton(Dialog.BUTTON_NEGATIVE, "No, return", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                dialog.show();
             }
-            else current = 0;
         }
         else Toast.makeText(getApplicationContext(),
                 "Nothing to delete", Toast.LENGTH_SHORT).show();
